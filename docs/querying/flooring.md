@@ -81,6 +81,33 @@ query GetFlooringTypes {
 }
 ```
 
+## Get flooring with installation spec
+
+```graphql
+query GetFlooringWithSpec {
+  flooring(where: { enabled: { eq: true } }) {
+    id
+    name
+    price
+    spec {
+      components {
+        componentName
+        unit
+        pricePerUnit
+        quantityPerSquareMeter
+      }
+      wastageRules {
+        minSquares
+        maxSquares
+        wastagePercentage
+      }
+    }
+  }
+}
+```
+
+See [Product Spec](./product-spec) for how to use this data to calculate material quantities.
+
 ## Fields reference
 
 | Field | Type | Description |
@@ -97,3 +124,4 @@ query GetFlooringTypes {
 | `isFeatured` | `Boolean` | Whether the product is featured |
 | `flooringType` | `FlooringType` | Category type |
 | `productImages` | `[ProductImage]` | Associated images |
+| `spec` | `ProductSpec` | Installation components and wastage rules |

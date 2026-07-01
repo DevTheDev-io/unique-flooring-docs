@@ -7,7 +7,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Querying Products',
-      items: ['querying/flooring', 'querying/wall-cladding', 'querying/decking'],
+      items: ['querying/flooring', 'querying/wall-cladding', 'querying/decking', 'querying/product-spec'],
     },
     'filtering',
     'errors',

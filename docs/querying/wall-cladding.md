@@ -80,6 +80,33 @@ query GetWallCladdingTypes {
 }
 ```
 
+## Get wall cladding with installation spec
+
+```graphql
+query GetWallCladdingWithSpec {
+  wallCladding(where: { enabled: { eq: true } }) {
+    id
+    name
+    price
+    spec {
+      components {
+        componentName
+        unit
+        pricePerUnit
+        quantityPerSquareMeter
+      }
+      wastageRules {
+        minSquares
+        maxSquares
+        wastagePercentage
+      }
+    }
+  }
+}
+```
+
+See [Product Spec](./product-spec) for how to use this data to calculate material quantities.
+
 ## Fields reference
 
 | Field | Type | Description |
@@ -95,3 +122,4 @@ query GetWallCladdingTypes {
 | `isFeatured` | `Boolean` | Whether the product is featured |
 | `wallCladdingType` | `WallCladdingType` | Category type |
 | `productImages` | `[ProductImage]` | Associated images |
+| `spec` | `ProductSpec` | Installation components and wastage rules |
