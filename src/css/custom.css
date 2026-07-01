@@ -1,30 +1,33 @@
-/**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
- */
+/* Unique Flooring brand colors — Skeleton UI crimson theme */
 
-/* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-color-primary: oklch(55.71% 0.21 19.55deg);         /* primary-500 */
+  --ifm-color-primary-dark: oklch(50.91% 0.2 19.59deg);     /* primary-600 */
+  --ifm-color-primary-darker: oklch(46.18% 0.18 19.26deg);  /* primary-700 */
+  --ifm-color-primary-darkest: oklch(36.08% 0.14 18.61deg); /* primary-900 */
+  --ifm-color-primary-light: oklch(59.91% 0.2 14.19deg);    /* primary-400 */
+  --ifm-color-primary-lighter: oklch(65.86% 0.17 10.24deg); /* primary-300 */
+  --ifm-color-primary-lightest: oklch(80.66% 0.09 5.94deg); /* primary-100 */
+
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-navbar-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  --ifm-font-family-base: Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif;
+  --ifm-heading-font-family: Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
+  --ifm-color-primary: oklch(65.86% 0.17 10.24deg);         /* primary-300 — lighter for dark bg */
+  --ifm-color-primary-dark: oklch(59.91% 0.2 14.19deg);     /* primary-400 */
+  --ifm-color-primary-darker: oklch(55.71% 0.21 19.55deg);  /* primary-500 */
+  --ifm-color-primary-darkest: oklch(46.18% 0.18 19.26deg); /* primary-700 */
+  --ifm-color-primary-light: oklch(72.91% 0.13 8.14deg);    /* primary-200 */
+  --ifm-color-primary-lighter: oklch(80.66% 0.09 5.94deg);  /* primary-100 */
+  --ifm-color-primary-lightest: oklch(88.86% 0.05 4.44deg); /* primary-50 */
+
+  --ifm-background-color: oklch(16.69% 0.02 275.16deg);     /* surface-950 */
+  --ifm-navbar-background-color: oklch(20.75% 0.02 273.29deg); /* surface-900 */
+  --ifm-sidebar-background-color: oklch(20.75% 0.02 273.29deg);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
