@@ -4,6 +4,7 @@ const sidebars: SidebarsConfig = {
   apiSidebar: [
     'intro',
     'getting-started',
+    'integration-guide',
     {
       type: 'category',
       label: 'Querying Products',
