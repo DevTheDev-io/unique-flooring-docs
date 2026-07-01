@@ -6,6 +6,10 @@ sidebar_position: 4
 
 # Product Spec
 
+:::caution Under Construction
+The product spec system is still under active development. Fields and behavior on this page may change.
+:::
+
 Every product (flooring, wall cladding, decking) exposes a `spec` field containing the full installation component list and tiered wastage rules for that product type. Use this to calculate the complete material requirements for a given area.
 
 ## Querying the spec
