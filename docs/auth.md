@@ -25,4 +25,4 @@ These operations require a JWT token issued by the Unique Flooring authenticatio
 
 ## If you receive AUTH_NOT_AUTHORIZED
 
-You are querying a field or mutation that requires authentication. Check the [Overview](./intro) for the list of publicly available queries and ensure you are only using those.
+You are querying a field or mutation that requires authentication. Check the [Overview](/) for the list of publicly available queries and ensure you are only using those.
