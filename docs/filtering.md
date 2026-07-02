@@ -63,3 +63,23 @@ flooring(where: { flooringType: { name: { eq: "Engineered Wood" } } }) {
   name
 }
 ```
+
+## Filtering nested collections
+
+Sub-collections on a product also accept a `where` argument. The most common use is fetching only the primary image:
+
+```graphql
+query GetDecking {
+  decking(where: { enabled: { eq: true } }) {
+    id
+    name
+    productImages(where: { isPrimary: { eq: true } }) {
+      image {
+        url
+      }
+    }
+  }
+}
+```
+
+Omit the `where` on `productImages` to return all images for the product. The same filtering operators available on top-level queries apply to nested collections.
