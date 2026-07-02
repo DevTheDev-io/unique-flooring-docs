@@ -18,6 +18,10 @@ query GetFlooring {
     id
     name
     price
+    stockQuantity
+    leadTimeDays
+    minReorderQuantity
+    maxReorderQuantity
     flooringType {
       name
     }
@@ -96,6 +100,10 @@ const GET_FLOORING = gql`
       id
       name
       price
+      stockQuantity
+      leadTimeDays
+      minReorderQuantity
+      maxReorderQuantity
       flooringType {
         name
       }
@@ -148,6 +156,10 @@ interface GetFlooringResult {
     id: string;
     name: string;
     price: number;
+    stockQuantity: number | null;
+    leadTimeDays: number | null;
+    minReorderQuantity: number | null;
+    maxReorderQuantity: number | null;
     flooringType: { name: string };
   }[];
 }
@@ -158,6 +170,10 @@ const GET_FLOORING = gql`
       id
       name
       price
+      stockQuantity
+      leadTimeDays
+      minReorderQuantity
+      maxReorderQuantity
       flooringType {
         name
       }

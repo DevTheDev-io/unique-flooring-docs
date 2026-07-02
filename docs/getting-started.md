@@ -37,6 +37,10 @@ query GetFlooring {
     id
     name
     price
+    stockQuantity
+    leadTimeDays
+    minReorderQuantity
+    maxReorderQuantity
     flooringType {
       name
     }
