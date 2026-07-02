@@ -8,6 +8,47 @@ sidebar_position: 2
 
 Query wall cladding products and their category types.
 
+## Recommended integration query
+
+The query below is the recommended starting point for external integrations. It returns all enabled wall cladding with the primary image and full installation spec in a single request.
+
+```graphql
+query GetWallCladding {
+  wallCladding(where: { enabled: { eq: true } }) {
+    colour
+    description
+    dimensions
+    id
+    name
+    price
+    squaresPerPanel
+    wallCladdingType {
+      name
+    }
+    productImages(where: { isPrimary: { eq: true } }) {
+      image {
+        url
+      }
+    }
+    spec {
+      components {
+        componentName
+        pricePerUnit
+        quantityPerSquareMeter
+        unit
+      }
+      wastageRules {
+        maxSquares
+        minSquares
+        wastagePercentage
+      }
+    }
+  }
+}
+```
+
+`productImages` is filtered to the primary image only. See [Filtering nested collections](#filtering-nested-collections) below for other options.
+
 ## Get all enabled wall cladding
 
 ```graphql
@@ -106,6 +147,20 @@ query GetWallCladdingWithSpec {
 ```
 
 See [Product Spec](./product-spec) for how to use this data to calculate material quantities.
+
+## Filtering nested collections
+
+`productImages` accepts a `where` argument. Use it to fetch only the primary image instead of all images:
+
+```graphql
+productImages(where: { isPrimary: { eq: true } }) {
+  image {
+    url
+  }
+}
+```
+
+Omit the `where` to return all images for the product.
 
 ## Fields reference
 

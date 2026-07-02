@@ -8,6 +8,48 @@ sidebar_position: 1
 
 Query flooring products and their category types.
 
+## Recommended integration query
+
+The query below is the recommended starting point for external integrations. It returns all enabled flooring with the primary image and full installation spec in a single request.
+
+```graphql
+query GetFlooring {
+  flooring(where: { enabled: { eq: true } }) {
+    description
+    grading
+    id
+    name
+    plankSize
+    price
+    squares
+    warranty
+    flooringType {
+      name
+    }
+    productImages(where: { isPrimary: { eq: true } }) {
+      image {
+        url
+      }
+    }
+    spec {
+      components {
+        componentName
+        pricePerUnit
+        quantityPerSquareMeter
+        unit
+      }
+      wastageRules {
+        maxSquares
+        minSquares
+        wastagePercentage
+      }
+    }
+  }
+}
+```
+
+`productImages` is filtered to the primary image only. See [Filtering nested collections](#filtering-nested-collections) below for other options.
+
 ## Get all enabled flooring
 
 ```graphql
@@ -107,6 +149,20 @@ query GetFlooringWithSpec {
 ```
 
 See [Product Spec](./product-spec) for how to use this data to calculate material quantities.
+
+## Filtering nested collections
+
+`productImages` accepts a `where` argument. Use it to fetch only the primary image instead of all images:
+
+```graphql
+productImages(where: { isPrimary: { eq: true } }) {
+  image {
+    url
+  }
+}
+```
+
+Omit the `where` to return all images for the product.
 
 ## Fields reference
 
