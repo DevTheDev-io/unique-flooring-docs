@@ -27,6 +27,10 @@ query GetDecking {
     profile
     squaresPerBoard
     warranty
+    stockQuantity
+    leadTimeDays
+    minReorderQuantity
+    maxReorderQuantity
     deckingType {
       name
     }
@@ -71,6 +75,10 @@ query GetDecking {
     colour
     warranty
     squaresPerBoard
+    stockQuantity
+    leadTimeDays
+    minReorderQuantity
+    maxReorderQuantity
     deckingType {
       name
     }
@@ -82,6 +90,23 @@ query GetDecking {
   }
 }
 ```
+
+## Get stock availability
+
+```graphql
+query GetDeckingStock {
+  decking(where: { enabled: { eq: true } }) {
+    id
+    name
+    stockQuantity
+    leadTimeDays
+    minReorderQuantity
+    maxReorderQuantity
+  }
+}
+```
+
+`stockQuantity` is `null` when stock has not been entered for a product. `0` means tracked but currently empty. See [Stock fields](../intro#stock-fields) for the full semantics.
 
 ## Filter by material
 
@@ -193,3 +218,7 @@ Omit the `where` to return all images for the product.
 | `deckingType` | `DeckingType` | Category type |
 | `productImages` | `[ProductImage]` | Associated images |
 | `spec` | `ProductSpec` | Installation components and wastage rules |
+| `stockQuantity` | `Int` (nullable) | Boxes in stock. `null` = not tracked, `0` = tracked/empty |
+| `leadTimeDays` | `Int` (nullable) | Days to restock from supplier |
+| `minReorderQuantity` | `Int` (nullable) | Minimum boxes per supplier order |
+| `maxReorderQuantity` | `Int` (nullable) | Maximum boxes available from supplier |
