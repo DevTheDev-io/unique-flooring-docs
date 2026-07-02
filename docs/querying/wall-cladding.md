@@ -96,7 +96,7 @@ query GetWallCladdingStock {
 }
 ```
 
-`stockQuantity` is `null` when stock has not been entered for a product. `0` means tracked but currently empty. See [Stock fields](../intro#stock-fields) for the full semantics.
+`stockQuantity` is `null` when stock has not been entered for a product. `0` means tracked but currently empty. See [Stock fields](../#stock-fields) for the full semantics.
 
 ## Filter by colour
 
