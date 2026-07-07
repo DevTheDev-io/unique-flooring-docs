@@ -28,9 +28,14 @@ query GetFlooringWithSpec {
     spec {
       components {
         componentName
-        unit
+        unitLabel
+        unitSize
         pricePerUnit
+        calculationType
         quantityPerSquareMeter
+        isOptional
+        heightDependentLength
+        parameters { key value }
       }
       wastageRules {
         minSquares
@@ -76,6 +81,75 @@ Area: **25 m²**, wastage rule matched: **10%**, effective area: **27.5 m²**
 | Underlay  | m²    | 1.0    | 27.5 m²         |
 | Screws    | pack  | 0.05   | 1.375 → 2 packs |
 
+## Calculation types
+
+Not every component scales with area. `calculationType` on each `SpecItem` tells you which formula to run:
+
+### `PER_SQUARE_METER`
+
+The formula from the section above: `quantity = effectiveArea × quantityPerSquareMeter`.
+
+### `PER_EDGE_LENGTH`
+
+For components that only apply to specific edges, coursed vertically by height (e.g. fascia boards) — not proportional to area. Requires `isOptional: true` components to be explicitly requested, with the run length of only the edges that need them (e.g. summed edges where fascia is needed, not the full room perimeter).
+
+Required `parameters`: `courseHeight` (metres per vertical course).
+
+```
+courses = ceil(height / courseHeight)
+rawLength = runLength × courses
+wastedLength = rawLength × (1 + (wastagePercentage ?? 0))
+quantity = ceil(wastedLength / unitSize)
+```
+
+**`unitSize`** comes from the component itself (physical size of one unit, e.g. `2.85` for a 2.85m board) — not from `parameters`.
+
+**Ceiling rule — read this before implementing:** the `ceil()` above must be applied once, on the *aggregate* run length across the whole edge (or whole room) you're calculating for. If you calculate a sub-region (e.g. a single 1m-wide section of a wall) and `ceil()` that independently, then sum multiple sub-regions, you will overcount. Use the continuous cost-share formula below for sub-region breakdowns instead.
+
+**Worked example:** 4m × 4m deck, height 200mm, fascia needed on two edges totalling 6m, board = 2.85m long / R368, courses every 146mm:
+
+```
+courses = ceil(0.2 / 0.146) = 2
+rawLength = 6 × 2 = 12
+quantity = ceil(12 / 2.85) = 5 boards
+totalCost = 5 × 368 = R1,840
+```
+
+**Sub-region cost share** (e.g. showing the cost of just one 1m section of that edge — informational only, does not round, and does not equal a separately-purchasable quantity):
+
+```
+costShare = (pricePerUnit / unitSize) × segmentRunLength × courses × (1 + (wastagePercentage ?? 0))
+```
+
+For the same example, a 1m segment: `(368 / 2.85) × 1 × 2 = R258.25`. Summed segment cost-shares will not exactly equal the discrete `totalCost` above — the discrete total is what's actually purchased.
+
+## Height-dependent length
+
+Independent of `calculationType` — when `heightDependentLength: true`, the component's *count* comes from its normal `calculationType` formula, but its final quantity is scaled by a per-unit length that itself depends on height (e.g. a support post embedded in the ground: the deeper the deck sits, the longer the post must be).
+
+Required `parameters`: `embedDepth` (metres added to height for the unit's cut length).
+
+```
+unitLength = height + embedDepth
+quantity = count × unitLength
+```
+
+**Example:** square tubing at `quantityPerSquareMeter = 0.51` (density-based post count), `embedDepth = 0.3`, for a 16m² deck at 200mm height:
+
+```
+count = 16 × 0.51 = 8.16
+unitLength = 0.2 + 0.3 = 0.5
+quantity = 8.16 × 0.5 = 4.08m of tubing
+```
+
+:::note
+Post count from `quantityPerSquareMeter` is a density estimate, not an exact grid layout — treat it as an approximation for costing/ordering purposes.
+:::
+
+## Requesting optional components
+
+Components with `isOptional: true` are excluded from your BOM unless you explicitly include them — you're responsible for supplying whatever extra measurement their `calculationType` needs (a run length for `PER_EDGE_LENGTH`). There's no server-side "please include this" flag to send; simply run that component's formula yourself with your own measurements and add it to your total.
+
 ## `ProductSpec` fields
 
 | Field          | Type                  | Description                                                 |
@@ -85,12 +159,24 @@ Area: **25 m²**, wastage rule matched: **10%**, effective area: **27.5 m²**
 
 ## `SpecItem` fields
 
-| Field                    | Type      | Description                                  |
-| ------------------------ | --------- | -------------------------------------------- |
-| `componentName`          | `String`  | Human-readable component name                |
-| `unit`                   | `String`  | Unit of measure (e.g. `liter`, `m²`, `pack`) |
-| `pricePerUnit`           | `Decimal` | Current price per unit                       |
-| `quantityPerSquareMeter` | `Decimal` | Units required per m² of effective area      |
+| Field                    | Type                  | Description                                                          |
+| ------------------------ | --------------------- | ---------------------------------------------------------------------|
+| `componentName`          | `String`               | Human-readable component name                                        |
+| `unitLabel`              | `String`               | Display label for the unit (e.g. `2.85m board`) — do not parse this  |
+| `unitSize`               | `Decimal` \| `null`    | Canonical physical size of one unit, metres (used by `PER_EDGE_LENGTH`) |
+| `pricePerUnit`           | `Decimal`              | Current price per unit                                                |
+| `calculationType`        | `ComponentCalculationType` | `PER_SQUARE_METER` or `PER_EDGE_LENGTH` — see Calculation types above |
+| `quantityPerSquareMeter` | `Decimal` \| `null`    | Units required per m² (only set when `calculationType` is `PER_SQUARE_METER`) |
+| `isOptional`             | `Boolean`              | If true, only include this component if you supply its extra measurement |
+| `heightDependentLength`  | `Boolean`              | If true, see Height-dependent length above                            |
+| `parameters`             | `[CalcParameter!]!`    | Calc-type-specific values, e.g. `courseHeight`, `embedDepth`, `wastagePercentage` |
+
+## `CalcParameter` fields
+
+| Field   | Type      | Description                          |
+| ------- | --------- | ------------------------------------ |
+| `key`   | `String`  | Parameter name, e.g. `courseHeight`  |
+| `value` | `Decimal` | Parameter value                      |
 
 ## `SpecWastageRule` fields
 
