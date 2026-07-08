@@ -27,6 +27,7 @@ query GetFlooringWithSpec {
     price
     spec {
       components {
+        componentId
         componentName
         unitLabel
         unitSize
@@ -123,6 +124,31 @@ costShare = (pricePerUnit / unitSize) × segmentRunLength × courses × (1 + (wa
 
 For the same example, a 1m segment: `(368 / 2.85) × 1 × 2 = R258.25`. Summed segment cost-shares will not exactly equal the discrete `totalCost` above — the discrete total is what's actually purchased.
 
+### `GRID_SPACING`
+
+For components laid out on a real 2D grid under the product — e.g. support posts/tubing under a raised deck — rather than a flat area- or edge-based estimate. Not proportional to area or edge length; scales with the footprint's length and width independently, and is gated by height: a flush/surface-mounted product needs no posts at all.
+
+Required `parameters`: `postSpacing` (metres between posts, along both axes).
+
+```
+if height <= 0: quantity = 0   // surface-mounted — no posts needed
+postsAlongLength = ceil(length / postSpacing) + 1
+postsAlongWidth  = ceil(width / postSpacing) + 1
+quantity = postsAlongLength × postsAlongWidth
+```
+
+**Worked example:** 4.2m × 2.8m deck, raised (height > 0), posts every 1.4m:
+
+```
+postsAlongLength = ceil(4.2 / 1.4) + 1 = 3 + 1 = 4
+postsAlongWidth  = ceil(2.8 / 1.4) + 1 = 2 + 1 = 3
+quantity = 4 × 3 = 12 posts
+```
+
+At height 0 (surface-mounted), `quantity = 0` — omit this component from your BOM entirely rather than showing a zero-quantity line.
+
+`GRID_SPACING` components are never `isOptional` — height alone determines whether posts are needed, so there's nothing for you to opt into.
+
 ## Height-dependent length
 
 Independent of `calculationType` — when `heightDependentLength: true`, the component's *count* comes from its normal `calculationType` formula, but its final quantity is scaled by a per-unit length that itself depends on height (e.g. a support post embedded in the ground: the deeper the deck sits, the longer the post must be).
@@ -145,7 +171,7 @@ quantity = 8.16 × 0.26 = 2.1216m of tubing
 ```
 
 :::note
-Post count from `quantityPerSquareMeter` is a density estimate, not an exact grid layout — treat it as an approximation for costing/ordering purposes.
+Post count from `quantityPerSquareMeter` (i.e. `PER_SQUARE_METER` combined with `heightDependentLength`) is a density estimate, not an exact grid layout — treat it as an approximation for costing/ordering purposes. If the product needs an exact grid layout instead, look for a `GRID_SPACING` component (see above) rather than a density-based one.
 :::
 
 ## Requesting optional components
@@ -163,15 +189,16 @@ Components with `isOptional: true` are excluded from your BOM unless you explici
 
 | Field                    | Type                  | Description                                                          |
 | ------------------------ | --------------------- | ---------------------------------------------------------------------|
+| `componentId`            | `Int`                  | ID of the underlying reusable Component — use this to key any per-component requests you send back (e.g. edge run lengths) |
 | `componentName`          | `String`               | Human-readable component name                                        |
 | `unitLabel`              | `String`               | Display label for the unit (e.g. `2.85m board`) — do not parse this  |
 | `unitSize`               | `Decimal` \| `null`    | Canonical physical size of one unit, metres (used by `PER_EDGE_LENGTH`) |
 | `pricePerUnit`           | `Decimal`              | Current price per unit                                                |
-| `calculationType`        | `ComponentCalculationType` | `PER_SQUARE_METER` or `PER_EDGE_LENGTH` — see Calculation types above |
+| `calculationType`        | `ComponentCalculationType` | `PER_SQUARE_METER`, `PER_EDGE_LENGTH`, or `GRID_SPACING` — see Calculation types above |
 | `quantityPerSquareMeter` | `Decimal` \| `null`    | Units required per m² (only set when `calculationType` is `PER_SQUARE_METER`) |
 | `isOptional`             | `Boolean`              | If true, only include this component if you supply its extra measurement |
 | `heightDependentLength`  | `Boolean`              | If true, see Height-dependent length above                            |
-| `parameters`             | `[CalcParameter!]!`    | Calc-type-specific values, e.g. `courseHeight`, `postSpacing`, `embedRatio`, `wastagePercentage` |
+| `parameters`             | `[CalcParameter!]!`    | Calc-type-specific values, e.g. `courseHeight`, `embedRatio`, `postSpacing`, `wastagePercentage` |
 
 ## `CalcParameter` fields
 
