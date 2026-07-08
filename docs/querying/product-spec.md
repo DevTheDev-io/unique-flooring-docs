@@ -127,19 +127,21 @@ For the same example, a 1m segment: `(368 / 2.85) × 1 × 2 = R258.25`. Summed s
 
 Independent of `calculationType` — when `heightDependentLength: true`, the component's *count* comes from its normal `calculationType` formula, but its final quantity is scaled by a per-unit length that itself depends on height (e.g. a support post embedded in the ground: the deeper the deck sits, the longer the post must be).
 
-Required `parameters`: `embedDepth` (metres added to height for the unit's cut length).
+Required `parameters`: `embedRatio` (fraction of height added on top, e.g. `0.3` for 30% — not a fixed metres constant, since a taller structure needs proportionally more embedded length, not a flat offset).
 
 ```
+embedDepth = height × embedRatio
 unitLength = height + embedDepth
 quantity = count × unitLength
 ```
 
-**Example:** square tubing at `quantityPerSquareMeter = 0.51` (density-based post count), `embedDepth = 0.3`, for a 16m² deck at 200mm height:
+**Example:** square tubing at `quantityPerSquareMeter = 0.51` (density-based post count), `embedRatio = 0.3`, for a 16m² deck at 200mm height:
 
 ```
 count = 16 × 0.51 = 8.16
-unitLength = 0.2 + 0.3 = 0.5
-quantity = 8.16 × 0.5 = 4.08m of tubing
+embedDepth = 0.2 × 0.3 = 0.06
+unitLength = 0.2 + 0.06 = 0.26
+quantity = 8.16 × 0.26 = 2.1216m of tubing
 ```
 
 :::note
