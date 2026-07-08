@@ -171,7 +171,7 @@ Components with `isOptional: true` are excluded from your BOM unless you explici
 | `quantityPerSquareMeter` | `Decimal` \| `null`    | Units required per m² (only set when `calculationType` is `PER_SQUARE_METER`) |
 | `isOptional`             | `Boolean`              | If true, only include this component if you supply its extra measurement |
 | `heightDependentLength`  | `Boolean`              | If true, see Height-dependent length above                            |
-| `parameters`             | `[CalcParameter!]!`    | Calc-type-specific values, e.g. `courseHeight`, `embedDepth`, `wastagePercentage` |
+| `parameters`             | `[CalcParameter!]!`    | Calc-type-specific values, e.g. `courseHeight`, `postSpacing`, `embedRatio`, `wastagePercentage` |
 
 ## `CalcParameter` fields
 
