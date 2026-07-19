@@ -8,26 +8,26 @@ sidebar_position: 2
 
 This guide takes you from nothing to running your first query against the Unique Flooring API.
 
-## Option A — Explore with Nitro (recommended)
+## Option A: Explore with Nitro (recommended)
 
 [Nitro](https://nitro.chillicream.com) is an interactive GraphQL IDE that loads the full schema so you can explore, autocomplete, and run queries in your browser.
 
 ### Steps
 
-1. **Accept the org invite** — you will receive an email invitation to join the Unique Flooring organisation on Nitro. Accept it and create a free Nitro account if you don't have one.
+1. **Accept the org invite.** You will receive an email invitation to join the Unique Flooring organisation on Nitro. Accept it and create a free Nitro account if you don't have one.
 
-2. **Open Nitro** — go to [nitro.chillicream.com](https://nitro.chillicream.com) and sign in.
+2. **Open Nitro.** Go to [nitro.chillicream.com](https://nitro.chillicream.com) and sign in.
 
-3. **Create a new document** — click the `+` button in the Documents panel on the left.
+3. **Create a new document.** Click the `+` button in the Documents panel on the left.
 
-4. **Configure the connection** — click **Connection Settings** and fill in:
+4. **Configure the connection.** Click **Connection Settings** and fill in:
 
    | Field | Value |
    |-------|-------|
    | HTTP Endpoint | `https://services.uniqueflooring.co.za/graphql` |
    | SDL Schema Endpoint | `https://services.uniqueflooring.co.za/graphql?sdl` |
 
-5. **Click Apply** — the schema loads. You now have full autocomplete in the query editor.
+5. **Click Apply.** The schema loads. You now have full autocomplete in the query editor.
 
 6. **Run your first query**:
 
@@ -50,7 +50,7 @@ query GetFlooring {
 
 ---
 
-## Option B — Use your own GraphQL client
+## Option B: Use your own GraphQL client
 
 If you prefer to work locally or integrate directly into your tooling:
 

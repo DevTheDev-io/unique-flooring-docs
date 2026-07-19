@@ -9,7 +9,7 @@ sidebar_position: 4
 The API uses [Hot Chocolate's filtering system](https://chillicream.com/docs/hotchocolate/v16/fetching-data/filtering). All list queries accept a `where` argument for dynamic filtering.
 
 :::important
-Hot Chocolate wraps scalar comparisons in an operator object. The syntax is `{ field: { eq: value } }` — **not** `{ field: value }`.
+Hot Chocolate wraps scalar comparisons in an operator object. The syntax is `{ field: { eq: value } }`, **not** `{ field: value }`.
 :::
 
 For the full list of available operators, see the [Hot Chocolate v16 filtering reference](https://chillicream.com/docs/hotchocolate/v16/fetching-data/filtering).
@@ -35,7 +35,7 @@ For the full list of available operators, see the [Hot Chocolate v16 filtering r
 Use `and` / `or` arrays to combine multiple filters:
 
 ```graphql
-# AND — all conditions must match
+# AND: all conditions must match
 flooring(where: {
   and: [
     { enabled: { eq: true } }
@@ -44,7 +44,7 @@ flooring(where: {
   ]
 })
 
-# OR — any condition may match
+# OR: any condition may match
 flooring(where: {
   or: [
     { flooringType: { name: { eq: "Laminate" } } }

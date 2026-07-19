@@ -19,9 +19,9 @@ Every push to `main` triggers a GitHub Actions workflow that builds and deploys 
 git pull
 
 # 2. Edit markdown files in docs/
-# 3. Preview locally (optional — see below)
+# 3. Preview locally (optional, see below)
 
-# 4. Commit and push — site redeploys automatically
+# 4. Commit and push (site redeploys automatically)
 git add -A
 git commit -m "docs: describe what you changed"
 git push
@@ -31,7 +31,7 @@ git push
 
 ## File structure
 
-```
+```text
 docs/
 ├── intro.md              ← Overview: endpoint, what's public, tech stack
 ├── getting-started.md    ← Nitro setup + curl quickstart
@@ -76,7 +76,7 @@ apiSidebar: [
 ],
 ```
 
-3. Push — it appears on the live site automatically.
+3. Push, and it appears on the live site automatically.
 
 ---
 
@@ -106,7 +106,7 @@ Opens at `http://localhost:3000/unique-flooring-docs/`. Changes hot-reload in th
 
 The full GraphQL schema SDL is always available at:
 
-```
+```text
 https://services.uniqueflooring.co.za/graphql?sdl
 ```
 

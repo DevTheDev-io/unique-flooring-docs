@@ -7,11 +7,11 @@ slug: /
 
 # Unique Flooring API
 
-The Unique Flooring API is a GraphQL API that exposes the product catalog — flooring, wall cladding, and decking — along with brands, ranges, and organisation information.
+The Unique Flooring API is a GraphQL API that exposes the product catalog (flooring, wall cladding, and decking) along with brands, ranges, and organisation information.
 
 ## Endpoint
 
-```
+```text
 https://services.uniqueflooring.co.za/graphql
 ```
 
@@ -45,12 +45,12 @@ All three product types (`flooring`, `wallCladding`, `decking`) expose four stoc
 | `minReorderQuantity` | `Int` (nullable) | Minimum boxes per supplier order. |
 | `maxReorderQuantity` | `Int` (nullable) | Maximum boxes available to order from supplier at once. |
 
-Stock is managed manually by Unique Flooring staff. Always check `stockQuantity` for `null` before treating it as a count — a `null` value means the product exists but its stock has not been entered yet.
+Stock is managed manually by Unique Flooring staff. Always check `stockQuantity` for `null` before treating it as a count. A `null` value means the product exists but its stock has not been entered yet.
 
 ## Technology
 
 The API is built with [Hot Chocolate v16](https://chillicream.com/docs/hotchocolate/v16) on .NET. This means:
 
-- Filtering uses Hot Chocolate's operator syntax: `{ field: { eq: value } }` — see [Filtering](./filtering)
+- Filtering uses Hot Chocolate's operator syntax: `{ field: { eq: value } }` (see [Filtering](./filtering))
 - All list queries support dynamic filtering via `where` argument
-- Responses follow the [GraphQL spec](https://spec.graphql.org/) — data under `data`, errors under `errors`
+- Responses follow the [GraphQL spec](https://spec.graphql.org/): data under `data`, errors under `errors`

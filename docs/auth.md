@@ -8,7 +8,7 @@ sidebar_position: 6
 
 ## Public access
 
-All product catalog queries are publicly accessible — no authentication token is required. You can query flooring, wall cladding, decking, brands, ranges, specials, and organisation information without any credentials.
+All product catalog queries are publicly accessible, and no authentication token is required. You can query flooring, wall cladding, decking, brands, ranges, specials, and organisation information without any credentials.
 
 ## What requires authentication
 

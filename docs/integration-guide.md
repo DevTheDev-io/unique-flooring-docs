@@ -6,9 +6,9 @@ sidebar_position: 3
 
 # Integration Guide
 
-Concrete client code for calling the Unique Flooring GraphQL API from the stacks external integrators commonly use. Every example below runs the same query — `GetFlooring` — so you can compare how each stack does the same request.
+Concrete client code for calling the Unique Flooring GraphQL API from the stacks external integrators commonly use. Every example below runs the same query, `GetFlooring`, so you can compare how each stack does the same request.
 
-All requests go to `https://services.uniqueflooring.co.za/graphql` as an HTTP POST with a JSON body. Catalog queries (flooring, wall cladding, decking, brands, ranges, specials, organisation) are public — no auth token required. See [Authentication](/auth) for what's off-limits.
+All requests go to `https://services.uniqueflooring.co.za/graphql` as an HTTP POST with a JSON body. Catalog queries (flooring, wall cladding, decking, brands, ranges, specials, organisation) are public and require no auth token. See [Authentication](/auth) for what's off-limits.
 
 The example query used throughout:
 
@@ -33,7 +33,7 @@ query GetFlooring {
 
 ## .NET service-to-service (StrawberryShake)
 
-If you're calling this API from another Hot Chocolate/.NET service, use [StrawberryShake](https://chillicream.com/docs/strawberryshake) — Hot Chocolate's official typed GraphQL client. It generates a strongly-typed C# client from the schema, so queries are checked at compile time.
+If you're calling this API from another Hot Chocolate/.NET service, use [StrawberryShake](https://chillicream.com/docs/strawberryshake), Hot Chocolate's official typed GraphQL client. It generates a strongly-typed C# client from the schema, so queries are checked at compile time.
 
 ### Setup
 
@@ -43,7 +43,7 @@ dotnet add package StrawberryShake.Transport.Http
 dotnet graphql init https://services.uniqueflooring.co.za/graphql -n UniqueFlooringClient
 ```
 
-This creates a `.graphqlrc.json` pointing at the schema and a client project scaffold. Add your `.graphql` query documents (like `GetFlooring.graphql` containing the query above) to that project — StrawberryShake generates the typed client at build time.
+This creates a `.graphqlrc.json` pointing at the schema and a client project scaffold. Add your `.graphql` query documents (like `GetFlooring.graphql` containing the query above) to that project. StrawberryShake generates the typed client at build time.
 
 ### Registering the client (DI)
 
@@ -127,14 +127,14 @@ function FlooringList() {
   return (
     <ul>
       {data.flooring.map((item) => (
-        <li key={item.id}>{item.name} — {item.flooringType.name}</li>
+        <li key={item.id}>{item.name} ({item.flooringType.name})</li>
       ))}
     </ul>
   );
 }
 ```
 
-If your team already uses Apollo Client or urql, both work the same way against this endpoint — no special configuration is needed since there's no auth header to attach for catalog queries.
+If your team already uses Apollo Client or urql, both work the same way against this endpoint. No special configuration is needed since there's no auth header to attach for catalog queries.
 
 ---
 
@@ -189,7 +189,7 @@ async function getEnabledFlooring() {
 
 ---
 
-## Any other language — raw HTTP
+## Any other language: raw HTTP
 
 Every example above reduces to the same thing under the hood: an HTTP POST with a JSON body containing the query. If your stack isn't listed, this is all you need:
 
@@ -199,7 +199,7 @@ curl -X POST https://services.uniqueflooring.co.za/graphql \
   -d '{"query": "{ flooring(where: { enabled: { eq: true } }) { id name price } }"}'
 ```
 
-Any HTTP client library in any language can send this request — no GraphQL-specific tooling required.
+Any HTTP client library in any language can send this request. No GraphQL-specific tooling is required.
 
 ---
 

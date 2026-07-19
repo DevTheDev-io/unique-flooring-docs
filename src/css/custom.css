@@ -1,4 +1,4 @@
-/* Unique Flooring brand colors — Skeleton UI crimson theme */
+/* Unique Flooring brand colors, Skeleton UI crimson theme */
 
 :root {
   --ifm-color-primary: oklch(55.71% 0.21 19.55deg);         /* primary-500 */
@@ -18,7 +18,7 @@
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: oklch(65.86% 0.17 10.24deg);         /* primary-300 — lighter for dark bg */
+  --ifm-color-primary: oklch(65.86% 0.17 10.24deg);         /* primary-300, lighter for dark bg */
   --ifm-color-primary-dark: oklch(59.91% 0.2 14.19deg);     /* primary-400 */
   --ifm-color-primary-darker: oklch(55.71% 0.21 19.55deg);  /* primary-500 */
   --ifm-color-primary-darkest: oklch(46.18% 0.18 19.26deg); /* primary-700 */
