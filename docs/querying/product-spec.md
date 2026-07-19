@@ -108,23 +108,27 @@ The formula from the section above: `quantity = effectiveArea × quantityPerSqua
 
 ### `PER_EDGE_LENGTH`
 
-For components that only apply to specific edges, coursed vertically by height (e.g. fascia boards), not proportional to area. `isOptional: true` components of this type must be explicitly requested: pass the run length of only the edges that need them (e.g. summed edges where fascia is needed, not the full room perimeter).
+For components that only apply to specific edges, coursed vertically by height (e.g. fascia boards), not proportional to area. `isOptional: true` components of this type must be explicitly requested: pass the run length of each edge that needs them.
+
+**Run each physically separate edge/wall through the formula independently: do not sum them into one length first.** Offcuts from one wall's boards can't be spliced across a corner into the next wall (the join would look wrong, or the install method plainly doesn't allow it), so each separate run needs its own board(s), even if combining the lengths first would fit in fewer boards on paper. Only combine two lengths into one `runLength` if they are genuinely the same continuous straight run that you're arbitrarily splitting for your own bookkeeping (e.g. reporting it as two half-lengths). Never combine across a corner or joint.
 
 #### Inputs for PER_EDGE_LENGTH
 
 | Value               | Where it comes from                                                              |
-| ------------------- | -------------------------------------------------------------------------------- |
+| ------------------- | ---------------------------------------------------------------------------------- |
 | `courseHeight`      | From `spec.components[].parameters`                                              |
 | `unitSize`          | From the component itself, e.g. `2.85` for a 2.85m board (not from `parameters`) |
 | `pricePerUnit`      | From the component itself                                                        |
 | `wastagePercentage` | From the matched `spec.wastageRules` entry (0 if none matched)                   |
 | `height`            | You supply (structure height)                                                    |
-| `runLength`         | You supply (total edge length needing this component)                            |
+| `runLength`         | You supply: the length of one physically separate edge/run needing this component |
 
 #### Steps for PER_EDGE_LENGTH
 
+Run this once per physically separate edge, then sum the resulting `quantity` values (not the run lengths) across edges.
+
 1. Work out how many horizontal courses stack up to the full height: `courses = ceil(height / courseHeight)`
-2. Multiply by run length to get the raw board length needed: `rawLength = runLength × courses`
+2. Multiply by this edge's run length to get the raw board length needed: `rawLength = runLength × courses`
 3. Add wastage: `wastedLength = rawLength × (1 + (wastagePercentage ?? 0))`
 4. Convert to whole units: `quantity = ceil(wastedLength / unitSize)`
 
@@ -132,29 +136,39 @@ For components that only apply to specific edges, coursed vertically by height (
 courses = ceil(height / courseHeight)
 rawLength = runLength × courses
 wastedLength = rawLength × (1 + (wastagePercentage ?? 0))
-quantity = ceil(wastedLength / unitSize)
+quantity = ceil(wastedLength / unitSize)   // per edge, then sum quantities across edges
 ```
 
 :::danger Ceiling rule
-Apply `ceil()` **once**, on the _aggregate_ run length across the whole edge (or whole room) you're calculating for. If you calculate a sub-region (e.g. a single 1m-wide section of a wall) and `ceil()` that independently, then sum multiple sub-regions, you will overcount. Use the continuous cost-share formula below for sub-region breakdowns instead.
+Apply `ceil()` **once per physically separate edge**, never on a total summed across multiple edges/walls. Summing several edges into one `runLength` before ceiling assumes their offcuts are interchangeable, which isn't true across a corner or joint, and will undercount the boards you actually need to buy. The only case where combining lengths first is valid is when they're genuinely one continuous straight run split arbitrarily (not by a corner).
 :::
 
-**Worked example:** 4m × 4m deck, height 200mm, fascia needed on two edges totalling 6m, board = 2.85m long / R368, courses every 146mm:
+**Worked example:** 4m × 4m deck, height 200mm, fascia needed on the right and bottom edges (3m each, meeting at a corner), board = 2.85m long / R368, courses every 146mm:
 
 ```text
 courses = ceil(0.2 / 0.146) = 2
-rawLength = 6 × 2 = 12
-quantity = ceil(12 / 2.85) = 5 boards
-totalCost = 5 × 368 = R1,840
+
+// Right edge (3m), computed on its own:
+rawLength = 3 × 2 = 6
+quantity = ceil(6 / 2.85) = 3 boards
+
+// Bottom edge (3m), computed on its own:
+rawLength = 3 × 2 = 6
+quantity = ceil(6 / 2.85) = 3 boards
+
+totalQuantity = 3 + 3 = 6 boards
+totalCost = 6 × 368 = R2,208
 ```
 
-**Sub-region cost share.** Use this only to show the cost of a smaller slice of the edge (e.g. one 1m section) for display purposes. It is informational only: it does not round, and the result is not a separately-purchasable quantity.
+Treating the two edges as one aggregate 6m run instead would wrongly give `ceil(6 × 2 / 2.85) = 5` boards, 1 board short of what the job actually needs, because it assumes a board's offcut from the right edge can be carried around the corner to finish the bottom edge.
+
+**Sub-region cost share.** Use this only to show the cost of a smaller slice of a single continuous run (e.g. one 1m section of one wall, not a different wall) for display purposes. Never across a corner. It is informational only: it does not round, and the result is not a separately-purchasable quantity.
 
 ```text
 costShare = (pricePerUnit / unitSize) × segmentRunLength × courses × (1 + (wastagePercentage ?? 0))
 ```
 
-For the same example, a 1m segment: `(368 / 2.85) × 1 × 2 = R258.25`. Summed segment cost-shares will not exactly equal the discrete `totalCost` above; the discrete total is what's actually purchased.
+For a 1m slice of one of the 3m edges above: `(368 / 2.85) × 1 × 2 = R258.25`. Summed segment cost-shares within that one run will not exactly equal that edge's discrete quantity's cost (3 boards × R368 = R1,104); the discrete total is what's actually purchased for that edge.
 
 ### `GRID_SPACING`
 
@@ -232,7 +246,7 @@ Post count from `quantityPerSquareMeter` (i.e. `PER_SQUARE_METER` combined with 
 
 ## Requesting optional components
 
-Components with `isOptional: true` are excluded from your BOM unless you explicitly include them. You're responsible for supplying whatever extra measurement their `calculationType` needs (a run length for `PER_EDGE_LENGTH`). There's no server-side "please include this" flag to send; simply run that component's formula yourself with your own measurements and add it to your total.
+Components with `isOptional: true` are excluded from your BOM unless you explicitly include them. You're responsible for supplying whatever extra measurement their `calculationType` needs (one `runLength` per physically separate edge for `PER_EDGE_LENGTH`, see above). There's no server-side "please include this" flag to send; simply run that component's formula yourself with your own measurements and add it to your total.
 
 ## `ProductSpec` fields
 
