@@ -56,20 +56,9 @@ One entry per line item you want pre-added to the shopper's cart:
 | `productType` | `String` | Yes | `"Flooring"`, `"WallCladding"`, or `"Decking"`. |
 | `quantity` | `Int` | Yes | Quantity of the product. Must be greater than zero. |
 | `specConfig` | `SpecCalculationInput` | Only for spec-driven products | Dimension/edge configuration (`length`, `width`, `height`, `edgeRequests`), same shape as `calculateProductSpec`'s `input` argument — see [Product Spec](/querying/product-spec). Omit for products you're adding without a spec configuration. |
-| `bomLineItems` | `[CostLineItemInput!]` | No | Your own computed BOM for this item. **Cross-check only** — never persisted or trusted directly. The server always recomputes the BOM itself from `specConfig`. |
 | `totalCost` | `Decimal` | No | Your own computed total for this item. If supplied, the server compares it against its own recomputed total and **rejects the whole mutation** if they differ by more than one cent. Omit if you don't want this cross-check. |
 
-`CostLineItemInput` (only meaningful alongside `bomLineItems`, for the cross-check):
-
-| Field | Type |
-|---|---|
-| `componentName` | `String` |
-| `quantity` | `Decimal` |
-| `unit` | `String` |
-| `unitPrice` | `Decimal` |
-| `subtotal` | `Decimal` |
-
-**The server never trusts anything you compute.** For every item with a `specConfig`, it recomputes the BOM itself via the same calculator used by `calculateProductSpec`, and it always uses its own current product price, not anything you send. `bomLineItems` and `totalCost` exist purely so you can catch a mismatch between your own pricing/BOM logic and the server's before the shopper ever sees the cart — send them if you want that safety net, or omit them if you're fine trusting the server's numbers outright.
+**The server never trusts anything you compute.** For every item with a `specConfig`, it recomputes the BOM itself via the same calculator used by `calculateProductSpec`, and it always uses its own current product price, not anything you send. There is no field for submitting your own BOM line items — only the aggregate `totalCost` is accepted, and only as an optional cross-check against the server's own recomputed total. Send it if you want that safety net, or omit it if you're fine trusting the server's numbers outright.
 
 ### Response
 
