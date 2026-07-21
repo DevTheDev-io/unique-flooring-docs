@@ -5,6 +5,7 @@ const sidebars: SidebarsConfig = {
     'intro',
     'getting-started',
     'integration-guide',
+    'guest-cart-handoff',
     {
       type: 'category',
       label: 'Querying Products',

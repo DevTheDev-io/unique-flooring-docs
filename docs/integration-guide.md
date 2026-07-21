@@ -10,6 +10,8 @@ Concrete client code for calling the Unique Flooring GraphQL API from the stacks
 
 All requests go to `https://services.uniqueflooring.co.za/graphql` as an HTTP POST with a JSON body. Catalog queries (flooring, wall cladding, decking, brands, ranges, specials, organisation) are public and require no auth token. See [Authentication](/auth) for what's off-limits.
 
+If you're building a flow where your integration assembles a cart on the shopper's behalf and hands it off to the storefront, see [Guest Cart Handoff](/guest-cart-handoff) instead — it uses a separate API-key auth mechanism, not the JWT-based auth described here.
+
 The example query used throughout:
 
 ```graphql
