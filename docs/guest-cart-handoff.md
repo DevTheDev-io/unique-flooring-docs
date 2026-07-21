@@ -22,7 +22,7 @@ Send your API key on every request in the `X-Api-Key` header:
 X-Api-Key: <your-api-key>
 ```
 
-The key is shown to you **once**, at creation time, by whoever administers your integration on the Unique Flooring side — there is no way to retrieve it again afterwards, only reissue a new one. If the header is missing, empty, or doesn't match an active integrator, `createGuestCartHandoff` fails with `AUTH_NOT_AUTHORIZED` (see [Errors](/errors)). This is a separate auth mechanism from the Shopper/Admin JWTs described in [Authentication](/auth) — an API key only grants access to `createGuestCartHandoff`, nothing else.
+The key is shown to you **once**, at creation time, by whoever administers your integration on the Unique Flooring side — there is no way to retrieve it again afterwards, only reissue a new one. If the header is missing, empty, or doesn't match an active integrator, `createGuestCartHandoff` fails with `AUTH_NOT_AUTHENTICATED` (see [Errors](/errors)). This is a separate auth mechanism from the Shopper/Admin JWTs described in [Authentication](/auth) — an API key only grants access to `createGuestCartHandoff`, nothing else.
 
 ## `createGuestCartHandoff` mutation
 
@@ -91,7 +91,7 @@ One entry per line item you want pre-added to the shopper's cart:
 
 | Condition | Result |
 |---|---|
-| Missing/invalid `X-Api-Key` | `AUTH_NOT_AUTHORIZED` |
+| Missing/invalid `X-Api-Key` | `AUTH_NOT_AUTHENTICATED` |
 | Empty `items` list | Error: at least one item is required |
 | `quantity <= 0` on any item | Error naming the offending item index |
 | Unknown `productType` | Error naming the offending item index |
