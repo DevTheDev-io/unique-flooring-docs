@@ -94,6 +94,16 @@ See [Errors](/errors) for the general GraphQL error response shape.
 - A handoff expires **15 minutes** after creation. If the shopper doesn't reach `/cart` with the token in time, the storefront's redemption fails and the shopper sees an empty/expired cart — create a fresh handoff rather than reusing an old `redirectUrl`.
 - A handoff can be redeemed **exactly once**. The storefront's `/cart` page redemption happens automatically on load; if the same `redirectUrl` is opened a second time (e.g. the shopper bookmarks it, or your own page is reloaded and re-triggers the redirect), redemption fails because the token was already consumed on the first visit. Generate a new handoff per shopper session/attempt rather than caching and reusing a `redirectUrl`.
 
+## What the shopper sees after handoff
+
+Once the shopper lands on `/cart`, the handoff items behave exactly like anything else added through the storefront's own quote wizard:
+
+- **Cart, checkout, and the order confirmation email all show the full itemized breakdown** for any item with a `specConfig` — boards/units plus every accessory/component from the recomputed BOM, each with its own quantity, unit, unit price, and subtotal. Nothing you hand off is ever collapsed down to a single opaque line-item price. This applies whether the shopper logs in before checking out or completes the order as a guest — both paths price and display the same recomputed total and breakdown.
+- The price shown for each item is always the server's blended per-unit price (base product cost plus the accessory total, divided by quantity) — the same number your `totalCost` cross-check (if you sent one) was validated against.
+- If the shopper logs in partway through (e.g. they had an account and sign in before checking out), the handed-off item's `specConfig`/BOM carries through the merge into their account cart unchanged — it isn't dropped or reset to a plain no-spec item.
+
+You don't need to do anything to make this happen; it's the default behavior for any item you hand off with a `specConfig`. This section exists so you know what your shopper will actually see downstream of the redirect, in case you need to describe it to them or your own support team.
+
 ## What you don't need to call
 
 Redemption (`redeemGuestCartHandoff`) is called by the storefront's own `/cart` page, not by your integration. You only ever call `createGuestCartHandoff` and redirect the shopper to the URL it returns.
