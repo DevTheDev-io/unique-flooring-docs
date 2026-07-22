@@ -10,9 +10,21 @@ Lets an external integrator build a cart on the shopper's behalf (e.g. a configu
 
 The flow has three steps:
 
-1. An admin issues your integration an API key (`createExternalIntegrator`, admin-only — you don't call this).
+1. Get an API key issued to your integration (see [Getting an API key](#getting-an-api-key) below) — a one-time setup step, not something you call per request.
 2. Your backend calls `createGuestCartHandoff` with the items to add, authenticated with that API key. You get back a `redirectUrl`.
 3. You redirect the shopper's browser to `redirectUrl`. The storefront's `/cart` page redeems the token itself and populates the shopper's cart. You never need to call the redemption query yourself.
+
+## Getting an API key
+
+API keys are issued and revoked by a Unique Flooring admin from the admin dashboard (Admin → External Integrators), not through any call you make yourself. To get set up:
+
+1. Contact whoever administers the Unique Flooring instance you're integrating with and give them a name for your integration (e.g. `"Acme Configurator"`) — this is just a label shown in their admin dashboard to identify which key belongs to which integration, it has no bearing on what the key can do.
+2. They create the integrator from Admin → External Integrators, which generates the key.
+3. **The raw key is shown to them once, at creation time, and never again afterwards.** They need to pass it to you out-of-band (however you two exchange secrets) immediately — there is no "view key" screen to come back to later. If it's lost, the only recovery is revoking that integrator and issuing a new one, which means updating the key on your end too.
+
+Every issued key maps to exactly one integrator record and has no expiry by itself, but an admin can revoke it at any time from the same dashboard page. A revoked key stops authenticating immediately: every subsequent `createGuestCartHandoff` call fails with `AUTH_NOT_AUTHENTICATED` until you're issued a new one. If your integration suddenly starts failing every request with that error and nothing changed on your end, ask the admin whether your key was revoked or rotated.
+
+There is no self-service way to list, rotate, or check the status of your own key — that's entirely admin-side. If you need to confirm your key is still active, the only way is to make a real `createGuestCartHandoff` call and check whether it succeeds.
 
 ## Authentication
 
@@ -22,7 +34,19 @@ Send your API key on every request in the `X-Api-Key` header:
 X-Api-Key: <your-api-key>
 ```
 
-The key is shown to you **once**, at creation time, by whoever administers your integration on the Unique Flooring side — there is no way to retrieve it again afterwards, only reissue a new one. If the header is missing, empty, or doesn't match an active integrator, `createGuestCartHandoff` fails with `AUTH_NOT_AUTHENTICATED` (see [Errors](/errors)). This is a separate auth mechanism from the Shopper/Admin JWTs described in [Authentication](/auth) — an API key only grants access to `createGuestCartHandoff`, nothing else.
+If the header is missing, empty, or doesn't match an active integrator, `createGuestCartHandoff` fails with `AUTH_NOT_AUTHENTICATED` (see [Errors](/errors)). This is a separate auth mechanism from the Shopper/Admin JWTs described in [Authentication](/auth) — an API key only grants access to `createGuestCartHandoff`, nothing else. It cannot read or mutate anything else in the API: no catalog, cart, order, or customer data beyond what this one mutation returns.
+
+## Endpoint
+
+Every call in this guide goes to the same GraphQL endpoint used for everything else in this API:
+
+```
+POST https://services.uniqueflooring.co.za/graphql
+Content-Type: application/json
+X-Api-Key: <your-api-key>
+```
+
+There's no separate REST endpoint or base path for this flow — it's a single GraphQL mutation (`createGuestCartHandoff`) sent to the standard endpoint, with the `X-Api-Key` header attached. See [Integration Guide](/integration-guide) for client code examples per stack (.NET, Node, React) — the same setup works here, just add the `X-Api-Key` header and point at this mutation instead of a catalog query.
 
 ## `createGuestCartHandoff` mutation
 
@@ -34,7 +58,7 @@ mutation CreateGuestCartHandoff($items: [GuestCartHandoffItemInput!]!) {
 }
 ```
 
-Send it as an HTTP POST to the same GraphQL endpoint used for catalog queries, with the `X-Api-Key` header attached:
+Example request:
 
 ```bash
 curl -X POST https://services.uniqueflooring.co.za/graphql \
@@ -56,20 +80,9 @@ One entry per line item you want pre-added to the shopper's cart:
 | `productType` | `String` | Yes | `"Flooring"`, `"WallCladding"`, or `"Decking"`. |
 | `quantity` | `Int` | Yes | Quantity of the product. Must be greater than zero. |
 | `specConfig` | `SpecCalculationInput` | Only for spec-driven products | Dimension/edge configuration (`length`, `width`, `height`, `edgeRequests`), same shape as `calculateProductSpec`'s `input` argument — see [Product Spec](/querying/product-spec). Omit for products you're adding without a spec configuration. |
-| `bomLineItems` | `[CostLineItemInput!]` | No | Your own computed BOM for this item. **Cross-check only** — never persisted or trusted directly. The server always recomputes the BOM itself from `specConfig`. |
 | `totalCost` | `Decimal` | No | Your own computed total for this item. If supplied, the server compares it against its own recomputed total and **rejects the whole mutation** if they differ by more than one cent. Omit if you don't want this cross-check. |
 
-`CostLineItemInput` (only meaningful alongside `bomLineItems`, for the cross-check):
-
-| Field | Type |
-|---|---|
-| `componentName` | `String` |
-| `quantity` | `Decimal` |
-| `unit` | `String` |
-| `unitPrice` | `Decimal` |
-| `subtotal` | `Decimal` |
-
-**The server never trusts anything you compute.** For every item with a `specConfig`, it recomputes the BOM itself via the same calculator used by `calculateProductSpec`, and it always uses its own current product price, not anything you send. `bomLineItems` and `totalCost` exist purely so you can catch a mismatch between your own pricing/BOM logic and the server's before the shopper ever sees the cart — send them if you want that safety net, or omit them if you're fine trusting the server's numbers outright.
+**The server never trusts anything you compute.** For every item with a `specConfig`, it recomputes the BOM itself via the same calculator used by `calculateProductSpec`, and it always uses its own current product price, not anything you send. There is no field for submitting your own BOM line items — only the aggregate `totalCost` is accepted, and only as an optional cross-check against the server's own recomputed total. Send it if you want that safety net, or omit it if you're fine trusting the server's numbers outright.
 
 ### Response
 
