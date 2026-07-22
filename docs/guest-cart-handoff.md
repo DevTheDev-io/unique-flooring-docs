@@ -10,9 +10,21 @@ Lets an external integrator build a cart on the shopper's behalf (e.g. a configu
 
 The flow has three steps:
 
-1. An admin issues your integration an API key (`createExternalIntegrator`, admin-only — you don't call this).
+1. Get an API key issued to your integration (see [Getting an API key](#getting-an-api-key) below) — a one-time setup step, not something you call per request.
 2. Your backend calls `createGuestCartHandoff` with the items to add, authenticated with that API key. You get back a `redirectUrl`.
 3. You redirect the shopper's browser to `redirectUrl`. The storefront's `/cart` page redeems the token itself and populates the shopper's cart. You never need to call the redemption query yourself.
+
+## Getting an API key
+
+API keys are issued and revoked by a Unique Flooring admin from the admin dashboard (Admin → External Integrators), not through any call you make yourself. To get set up:
+
+1. Contact whoever administers the Unique Flooring instance you're integrating with and give them a name for your integration (e.g. `"Acme Configurator"`) — this is just a label shown in their admin dashboard to identify which key belongs to which integration, it has no bearing on what the key can do.
+2. They create the integrator from Admin → External Integrators, which generates the key.
+3. **The raw key is shown to them once, at creation time, and never again afterwards.** They need to pass it to you out-of-band (however you two exchange secrets) immediately — there is no "view key" screen to come back to later. If it's lost, the only recovery is revoking that integrator and issuing a new one, which means updating the key on your end too.
+
+Every issued key maps to exactly one integrator record and has no expiry by itself, but an admin can revoke it at any time from the same dashboard page. A revoked key stops authenticating immediately: every subsequent `createGuestCartHandoff` call fails with `AUTH_NOT_AUTHENTICATED` until you're issued a new one. If your integration suddenly starts failing every request with that error and nothing changed on your end, ask the admin whether your key was revoked or rotated.
+
+There is no self-service way to list, rotate, or check the status of your own key — that's entirely admin-side. If you need to confirm your key is still active, the only way is to make a real `createGuestCartHandoff` call and check whether it succeeds.
 
 ## Authentication
 
@@ -22,7 +34,19 @@ Send your API key on every request in the `X-Api-Key` header:
 X-Api-Key: <your-api-key>
 ```
 
-The key is shown to you **once**, at creation time, by whoever administers your integration on the Unique Flooring side — there is no way to retrieve it again afterwards, only reissue a new one. If the header is missing, empty, or doesn't match an active integrator, `createGuestCartHandoff` fails with `AUTH_NOT_AUTHENTICATED` (see [Errors](/errors)). This is a separate auth mechanism from the Shopper/Admin JWTs described in [Authentication](/auth) — an API key only grants access to `createGuestCartHandoff`, nothing else.
+If the header is missing, empty, or doesn't match an active integrator, `createGuestCartHandoff` fails with `AUTH_NOT_AUTHENTICATED` (see [Errors](/errors)). This is a separate auth mechanism from the Shopper/Admin JWTs described in [Authentication](/auth) — an API key only grants access to `createGuestCartHandoff`, nothing else. It cannot read or mutate anything else in the API: no catalog, cart, order, or customer data beyond what this one mutation returns.
+
+## Endpoint
+
+Every call in this guide goes to the same GraphQL endpoint used for everything else in this API:
+
+```
+POST https://services.uniqueflooring.co.za/graphql
+Content-Type: application/json
+X-Api-Key: <your-api-key>
+```
+
+There's no separate REST endpoint or base path for this flow — it's a single GraphQL mutation (`createGuestCartHandoff`) sent to the standard endpoint, with the `X-Api-Key` header attached. See [Integration Guide](/integration-guide) for client code examples per stack (.NET, Node, React) — the same setup works here, just add the `X-Api-Key` header and point at this mutation instead of a catalog query.
 
 ## `createGuestCartHandoff` mutation
 
@@ -34,7 +58,7 @@ mutation CreateGuestCartHandoff($items: [GuestCartHandoffItemInput!]!) {
 }
 ```
 
-Send it as an HTTP POST to the same GraphQL endpoint used for catalog queries, with the `X-Api-Key` header attached:
+Example request:
 
 ```bash
 curl -X POST https://services.uniqueflooring.co.za/graphql \
@@ -93,16 +117,6 @@ See [Errors](/errors) for the general GraphQL error response shape.
 
 - A handoff expires **15 minutes** after creation. If the shopper doesn't reach `/cart` with the token in time, the storefront's redemption fails and the shopper sees an empty/expired cart — create a fresh handoff rather than reusing an old `redirectUrl`.
 - A handoff can be redeemed **exactly once**. The storefront's `/cart` page redemption happens automatically on load; if the same `redirectUrl` is opened a second time (e.g. the shopper bookmarks it, or your own page is reloaded and re-triggers the redirect), redemption fails because the token was already consumed on the first visit. Generate a new handoff per shopper session/attempt rather than caching and reusing a `redirectUrl`.
-
-## What the shopper sees after handoff
-
-Once the shopper lands on `/cart`, the handoff items behave exactly like anything else added through the storefront's own quote wizard:
-
-- **Cart, checkout, and the order confirmation email all show the full itemized breakdown** for any item with a `specConfig` — boards/units plus every accessory/component from the recomputed BOM, each with its own quantity, unit, unit price, and subtotal. Nothing you hand off is ever collapsed down to a single opaque line-item price. This applies whether the shopper logs in before checking out or completes the order as a guest — both paths price and display the same recomputed total and breakdown.
-- The price shown for each item is always the server's blended per-unit price (base product cost plus the accessory total, divided by quantity) — the same number your `totalCost` cross-check (if you sent one) was validated against.
-- If the shopper logs in partway through (e.g. they had an account and sign in before checking out), the handed-off item's `specConfig`/BOM carries through the merge into their account cart unchanged — it isn't dropped or reset to a plain no-spec item.
-
-You don't need to do anything to make this happen; it's the default behavior for any item you hand off with a `specConfig`. This section exists so you know what your shopper will actually see downstream of the redirect, in case you need to describe it to them or your own support team.
 
 ## What you don't need to call
 
